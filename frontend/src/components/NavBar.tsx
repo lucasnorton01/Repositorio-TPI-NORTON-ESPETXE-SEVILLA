@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUIStore } from "../stores/uiStore";
 import { useCartStore } from "../stores/cartStore";
@@ -49,7 +49,9 @@ export function NavBar(): JSX.Element {
   const open = useUIStore((s) => s.navMenuOpen);
   const toggleNavMenu = useUIStore((s) => s.toggleNavMenu);
   const cartCount = useCartStore((s) => s.itemCount());
-  const showCarrito = !isAdmin && !isPedidos && !isStock;
+  const location = useLocation();
+  const isProductosPage = location.pathname === "/productos";
+  const showCarrito = !isAdmin && !isPedidos && !isStock && !isProductosPage;
 
   return (
     <header className="border-b border-orange-100 bg-white/90 shadow-sm backdrop-blur transition-shadow duration-200 dark:border-gray-800 dark:bg-gray-800/90">

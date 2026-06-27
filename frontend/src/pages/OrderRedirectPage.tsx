@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { verifyPayment } from "../services/api";
+import { useLocation, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { getPedidoDetail, verifyPayment } from "../services/api";
 import { useCart } from "../context/CartContext";
+import { PageTransition } from "../components/PageTransition";
 
 export default function OrderRedirectPage() {
   const { pedidoId, status } = useParams<{ pedidoId: string; status: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { limpiarCarrito } = useCart();
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
@@ -22,10 +24,20 @@ export default function OrderRedirectPage() {
     verifyPayment(id)
       .then((res) => {
         if (res.estado === "aprobado") {
-          sessionStorage.removeItem("prev_cart");
-          sessionStorage.removeItem("checkout_pedido_id");
-          limpiarCarrito(false);
-          setResult({ ok: true, msg: "Pago aprobado correctamente." });
+          // Verificar que el pedido no haya sido cancelado por tiempo agotado
+          return getPedidoDetail(id).then((pedido) => {
+            if (pedido.estado_codigo === "CANCELADO") {
+              setResult({
+                ok: false,
+                msg: "El tiempo de pago expiró. El pedido fue cancelado automáticamente.",
+              });
+              return;
+            }
+            sessionStorage.removeItem("prev_cart");
+            sessionStorage.removeItem("checkout_pedido_id");
+            limpiarCarrito(false);
+            setResult({ ok: true, msg: "Pago aprobado correctamente." });
+          });
         } else if (res.estado === "rechazado") {
           setResult({ ok: false, msg: "El pago fue rechazado." });
         } else {
@@ -48,6 +60,7 @@ export default function OrderRedirectPage() {
   }, [result, id, navigate]);
 
   return (
+    <PageTransition routeKey={location.pathname}>
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="w-full max-w-md rounded-xl border border-orange-100 dark:border-gray-500 bg-white/90 dark:bg-gray-800/90 p-8 text-center shadow-sm backdrop-blur">
         {!result ? (
@@ -76,5 +89,6 @@ export default function OrderRedirectPage() {
         )}
       </div>
     </div>
+    </PageTransition>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useLocation, useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { PageTransition } from '../components/PageTransition'
 import { api, listDireccionesUsuario, updatePedidoDireccion, cancelarPedido, type DireccionEntregaPublic } from '../services/api'
 import { PaymentButton } from '../components/PaymentButton'
 import { usePaymentStore } from '../stores/paymentStore'
@@ -23,6 +24,7 @@ interface OrderData {
 export default function PaymentPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const [direcciones, setDirecciones] = useState<DireccionEntregaPublic[]>([])
   const [selectedDirId, setSelectedDirId] = useState<number | null>(null)
@@ -36,9 +38,9 @@ export default function PaymentPage() {
     const saved = sessionStorage.getItem('timer_start')
     if (saved) {
       const elapsed = Math.floor((Date.now() - Number(saved)) / 1000)
-      return Math.max(180 - elapsed, 0)
+      return Math.max(120 - elapsed, 0)
     }
-    return 180
+    return 120
   })
 
   const pedidoQuery = useQuery({
@@ -183,9 +185,10 @@ export default function PaymentPage() {
   const order = pedidoQuery.data
   const selectedDir = direcciones.find(d => d.id === selectedDirId)
 
-  const timerUrgent = timeLeft <= 30 && timeLeft > 0
+  const timerUrgent = timeLeft <= 20 && timeLeft > 0
 
   return (
+    <PageTransition routeKey={location.pathname}>
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <header className="border-b border-gray-200 bg-white/90 shadow-sm backdrop-blur dark:border-surface-border dark:bg-surface-card/90">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
@@ -346,5 +349,6 @@ export default function PaymentPage() {
         </Card>
       </main>
     </div>
+    </PageTransition>
   )
 }

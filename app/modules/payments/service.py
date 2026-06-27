@@ -1,7 +1,7 @@
 import uuid
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Optional
 
@@ -10,7 +10,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session
 
 from app.core.config import settings
-from app.core.rbac import STATE_CONFIRMADO, STATE_PENDIENTE, normalize_role, ROLE_ADMIN, ROLE_PEDIDOS
+from app.core.rbac import STATE_CANCELADO, STATE_CONFIRMADO, STATE_PENDIENTE, normalize_role, ROLE_ADMIN, ROLE_PEDIDOS
 from app.core.sse import sse_manager
 from app.modules.pedidos.service import PedidoService
 from app.core.websocket import manager
@@ -38,6 +38,11 @@ logger = logging.getLogger(__name__)
 def _schedule_avance_en_prep(pedido_id: int) -> None:
     """Programa avance automático CONFIRMADO → EN_PREP a los 3 s."""
     PedidoService._schedule_avance_en_prep(pedido_id)
+
+
+def _schedule_auto_cancelar(pedido_id: int) -> None:
+    """Programa cancelación automática de pedido PENDIENTE a los 120 s."""
+    PaymentService._schedule_auto_cancelar(pedido_id)
 
 
 class PaymentService:
@@ -133,6 +138,7 @@ class PaymentService:
             "external_reference": str(pedido_id),
             "back_urls": back_urls,
             "notification_url": notification_url,
+            "date_of_expiration": (datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat(),
         }
 
         # auto_return solo con URLs públicas (HTTPS requerido por MP)
@@ -292,6 +298,8 @@ class PaymentService:
             pedido.forma_pago_codigo = "MERCADOPAGO"
             uow.pedidos.add(pedido)
 
+            PaymentService._schedule_auto_cancelar(pedido.id)
+
             return PagoCrearResponse(
                 pago_id=pago.id,
                 preference_id=mp_data["preference_id"],
@@ -421,6 +429,12 @@ class PaymentService:
                         )
                         broadcast_event = EVENT_PAGO_CONFIRMADO
                         broadcast_estado_nuevo = STATE_CONFIRMADO
+                    elif pedido and pedido.estado_codigo == "CANCELADO":
+                        logger.warning(
+                            "Webhook: pago aprobado para pedido %s ya cancelado (tiempo agotado). "
+                            "El pago se registra pero la orden no se confirma.",
+                            pedido.id,
+                        )
                 elif nuevo_estado == "rechazado":
                     estado_actual = pedido.estado_codigo if pedido else None
                     broadcast_event = EVENT_PAGO_RECHAZADO
@@ -523,6 +537,12 @@ class PaymentService:
                         uow.pedidos.add(pedido)
                         broadcast_event = EVENT_PAGO_CONFIRMADO
                         broadcast_estado_nuevo = STATE_CONFIRMADO
+                    elif nuevo_estado == "aprobado" and pedido.estado_codigo == "CANCELADO":
+                        logger.warning(
+                            "Pago aprobado para pedido %s ya cancelado (tiempo agotado). "
+                            "El pago se registra pero la orden no se confirma.",
+                            pedido.id,
+                        )
                     elif nuevo_estado == "rechazado":
                         broadcast_event = EVENT_PAGO_RECHAZADO
                         broadcast_estado_anterior = pedido.estado_codigo
@@ -543,13 +563,14 @@ class PaymentService:
                 await self._broadcast_stock_changes(pedido_id)
                 _schedule_avance_en_prep(pedido_id)
 
-            return PagoEstadoResponse(estado=nuevo_estado, pedido_id=pedido_id)
+            return PagoEstadoResponse(estado=nuevo_estado, pedido_id=pedido_id, pedido_estado=pedido.estado_codigo)
 
         with PagoUnitOfWork(self._session) as uow:
             pago_local = uow.pagos.get_ultimo_by_pedido(pedido_id)
             return PagoEstadoResponse(
                 estado=pago_local.estado if pago_local else None,
                 pedido_id=pedido_id,
+                pedido_estado=pedido.estado_codigo if pedido else None,
             )
 
     async def aprobar_manual(self, data: ManualAprobarRequest) -> PagoEstadoResponse:
@@ -631,4 +652,63 @@ class PaymentService:
             await self._broadcast_stock_changes(data.pedido_id)
             _schedule_avance_en_prep(data.pedido_id)
 
-        return PagoEstadoResponse(estado=nuevo_estado, pedido_id=data.pedido_id)
+        return PagoEstadoResponse(estado=nuevo_estado, pedido_id=data.pedido_id, pedido_estado=pedido.estado_codigo if pedido else None)
+
+    @staticmethod
+    def _schedule_auto_cancelar(pedido_id: int) -> None:
+        """Programa cancelación automática de pedido PENDIENTE a los 120 s."""
+        import asyncio
+        asyncio.get_running_loop().call_later(
+            120,
+            lambda pid=pedido_id: PaymentService._auto_cancelar_pendiente(pid),
+        )
+
+    @staticmethod
+    def _auto_cancelar_pendiente(pedido_id: int) -> None:
+        """Timer: 120 s después de crear pago, cancela si sigue PENDIENTE."""
+        from app.core.database import engine
+        from app.modules.pedidos.models import HistorialEstadoPedido
+        from app.modules.pedidos.repository import HistorialEstadoPedidoRepository
+        from app.modules.pedidos.events import build_pedido_event, EVENT_ESTADO_CAMBIADO
+        from app.core.websocket import manager
+        from app.core.sse import sse_manager
+        from sqlmodel import Session
+        try:
+            with Session(engine) as session:
+                repo = PedidoRepository(session)
+                pedido = repo.get_by_id(pedido_id)
+                if not pedido or pedido.estado_codigo != STATE_PENDIENTE:
+                    return
+                pedido_anterior = pedido.estado_codigo
+                pedido.estado_codigo = STATE_CANCELADO
+                pedido.updated_at = datetime.now(timezone.utc)
+                repo.add(pedido)
+                historial = HistorialEstadoPedido(
+                    pedido_id=pedido_id,
+                    estado_desde_codigo=pedido_anterior,
+                    estado_hacia_codigo=STATE_CANCELADO,
+                    usuario_id=None,
+                    motivo="Cancelación automática por falta de pago (120 s)",
+                    fecha=datetime.now(timezone.utc),
+                )
+                historial_repo = HistorialEstadoPedidoRepository(session)
+                historial_repo.add(historial)
+                session.commit()
+            import asyncio
+            evento = build_pedido_event(
+                event=EVENT_ESTADO_CAMBIADO,
+                pedido_id=pedido_id,
+                estado_anterior=pedido_anterior,
+                estado_nuevo=STATE_CANCELADO,
+                usuario_id=None,
+                motivo="Cancelación automática por falta de pago",
+            )
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                loop.create_task(manager.broadcast_pedido(pedido_id, evento))
+                loop.create_task(sse_manager.broadcast(EVENT_ESTADO_CAMBIADO, evento))
+            else:
+                loop.run_until_complete(manager.broadcast_pedido(pedido_id, evento))
+                loop.run_until_complete(sse_manager.broadcast(EVENT_ESTADO_CAMBIADO, evento))
+        except Exception:
+            logger.exception("Error en timer auto-cancel pedido %s", pedido_id)

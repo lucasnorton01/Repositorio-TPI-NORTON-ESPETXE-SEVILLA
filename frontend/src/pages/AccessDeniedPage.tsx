@@ -1,5 +1,10 @@
+import { useLocation } from "react-router-dom";
+import { PageTransition } from "../components/PageTransition";
+
 export function AccessDeniedPage(): JSX.Element {
+  const location = useLocation();
   return (
+    <PageTransition routeKey={location.pathname}>
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
       <div className="rounded-2xl border border-red-100 dark:border-red-800 bg-white/90 dark:bg-gray-800/90 p-8 text-center shadow-lg backdrop-blur max-w-md">
         <div className="mb-4 text-5xl">🚫</div>
@@ -14,5 +19,6 @@ export function AccessDeniedPage(): JSX.Element {
         </a>
       </div>
     </div>
+    </PageTransition>
   );
 }

@@ -22,6 +22,7 @@ class PagoCrearResponse(SQLModel):
 class PagoEstadoResponse(SQLModel):
     estado: Optional[str] = None
     pedido_id: int
+    pedido_estado: Optional[str] = None
 
 
 class ManualAprobarRequest(SQLModel):

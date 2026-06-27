@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 
@@ -16,6 +17,8 @@ import { ClienteDashboard } from "./pages/ClienteDashboard";
 import { IngredientDetailPage } from "./pages/IngredientDetailPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { VentasPage } from "./pages/VentasPage";
+import { LandingPage } from "./pages/LandingPage";
+import { RegisterPage } from "./pages/RegisterPage";
 import { LoginPage } from "./pages/LoginPage";
 import { CarritoPage } from "./pages/CarritoPage";
 import PaymentPage from "./pages/PaymentPage";
@@ -34,6 +37,7 @@ import { ProductosInternosPage } from "./pages/ProductosInternosPage";
 import { VentaDetailPage } from "./pages/VentaDetailPage";
 
 import { ClientePedidoDetailPage } from "./pages/ClientePedidoDetailPage";
+import { PageTransition } from "./components/PageTransition";
 import { ThemeToggle } from "./components/ThemeToggle";
 
 interface DashboardLayoutProps {
@@ -41,6 +45,7 @@ interface DashboardLayoutProps {
 }
 
 function DashboardLayout({ children }: DashboardLayoutProps): JSX.Element {
+  const location = useLocation();
   return (
     <div
       className="flex min-h-screen flex-col bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 font-body text-slate-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 dark:text-gray-100"
@@ -48,7 +53,9 @@ function DashboardLayout({ children }: DashboardLayoutProps): JSX.Element {
     >
       <NavBar />
       <div className="flex-1 p-3 sm:p-4">
-        <div className="mx-auto max-w-6xl">{children}</div>
+        <div className="mx-auto max-w-6xl">
+          <PageTransition routeKey={location.pathname}>{children}</PageTransition>
+        </div>
       </div>
     </div>
   );
@@ -57,6 +64,7 @@ function DashboardLayout({ children }: DashboardLayoutProps): JSX.Element {
 export function App(): JSX.Element {
   const { isAuthenticated, isAdmin, isStock, isPedidos, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setLogoutHandler(() => {
@@ -67,7 +75,8 @@ export function App(): JSX.Element {
 
   return (
     <CartProvider>
-      <Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
         {/* Login */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage />} />
 
@@ -314,10 +323,14 @@ export function App(): JSX.Element {
           }
         />
 
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
         {/* Fallback */}
-        <Route path="/" element={isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
+      </AnimatePresence>
       <ThemeToggle />
     </CartProvider>
   );
