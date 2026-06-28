@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -11,6 +12,7 @@ import {
   updateUsuario,
   type DireccionEntregaPublic,
 } from "../services/api";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { SkeletonPage, SkeletonText } from "../components/Skeleton";
 
 interface PerfilForm {
@@ -46,6 +48,7 @@ export function PerfilPage(): JSX.Element {
   const [perfilForm, setPerfilForm] = useState<PerfilForm | null>(null);
   const [direccionForm, setDireccionForm] = useState<DireccionForm>(emptyDireccion);
   const [editingDireccion, setEditingDireccion] = useState<DireccionEntregaPublic | null>(null);
+  const [confirmDeleteDir, setConfirmDeleteDir] = useState<{ isOpen: boolean; id: number; alias: string }>({ isOpen: false, id: 0, alias: "" });
   const formRef = useRef<HTMLDivElement>(null);
 
   const perfilQuery = useQuery({
@@ -221,6 +224,7 @@ export function PerfilPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>Mi Perfil | Food Store</title></Helmet>
       <div>
         <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Mi Perfil</h1>
         <p className="mt-1 text-sm text-slate-700 dark:text-gray-300">Actualiza tus datos y administra tus direcciones de entrega.</p>
@@ -469,11 +473,7 @@ export function PerfilPage(): JSX.Element {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (window.confirm(`¿Eliminar "${direccion.alias}"?`)) {
-                        deleteDireccionMutation.mutate(direccion.id);
-                      }
-                    }}
+                    onClick={() => setConfirmDeleteDir({ isOpen: true, id: direccion.id, alias: direccion.alias })}
                     className="rounded bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600"
                   >
                     Eliminar
@@ -486,6 +486,19 @@ export function PerfilPage(): JSX.Element {
           )}
         </div>
       </section>
+
+      <ConfirmDialog
+        isOpen={confirmDeleteDir.isOpen}
+        title="Eliminar dirección"
+        message={`¿Estás seguro de eliminar "${confirmDeleteDir.alias}"?`}
+        confirmLabel="Eliminar"
+        variant="danger"
+        onConfirm={() => {
+          deleteDireccionMutation.mutate(confirmDeleteDir.id);
+          setConfirmDeleteDir({ isOpen: false, id: 0, alias: "" });
+        }}
+        onCancel={() => setConfirmDeleteDir({ isOpen: false, id: 0, alias: "" })}
+      />
     </div>
   );
 }

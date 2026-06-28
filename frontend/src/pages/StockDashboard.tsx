@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -5,6 +6,7 @@ import { Badge } from "../components/ui/Badge";
 export function StockDashboard(): JSX.Element {
   return (
     <div className="space-y-6">
+      <Helmet><title>Panel Stock | Food Store</title></Helmet>
       <div>
         <h1 className="font-display text-3xl font-bold text-brand-900 dark:text-brand-300">Panel de Stock</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-gray-300">Control de inventario y disponibilidad de productos</p>

@@ -5,6 +5,8 @@ import { useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 
 
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { NavBar } from "./components/NavBar";
 import { setLogoutHandler } from "./services/api";
@@ -38,7 +40,6 @@ import { VentaDetailPage } from "./pages/VentaDetailPage";
 
 import { ClientePedidoDetailPage } from "./pages/ClientePedidoDetailPage";
 import { PageTransition } from "./components/PageTransition";
-import { ThemeToggle } from "./components/ThemeToggle";
 
 interface DashboardLayoutProps {
   children: JSX.Element;
@@ -75,6 +76,7 @@ export function App(): JSX.Element {
 
   return (
     <CartProvider>
+      <ErrorBoundary>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
         {/* Login */}
@@ -328,10 +330,10 @@ export function App(): JSX.Element {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       </AnimatePresence>
-      <ThemeToggle />
+      </ErrorBoundary>
     </CartProvider>
   );
 }

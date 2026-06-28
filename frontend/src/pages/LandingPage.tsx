@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
 import { PageTransition } from "../components/PageTransition";
 
@@ -39,6 +40,7 @@ export function LandingPage(): JSX.Element {
 
   return (
     <PageTransition routeKey={location.pathname}>
+      <Helmet><title>Food Store</title></Helmet>
     <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-2">
       {/* Left — Content */}
       <div className="flex items-center justify-center bg-white px-6 py-12 dark:bg-surface-dark sm:px-10 lg:px-16">

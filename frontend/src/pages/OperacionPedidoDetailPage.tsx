@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { getPedidoDetail, getHistorialPedido, cambiarEstadoPedido, verifyPayment } from "../services/api";
@@ -136,6 +137,7 @@ export function OperacionPedidoDetailPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>{`Pedido #${pedido.id} | Food Store`}</title></Helmet>
       <div className="flex items-center justify-between">
         <div>
           <Link to="/operaciones-pedidos" className="text-sm text-brand-600 hover:underline dark:text-brand-400">&larr; Volver a pedidos</Link>

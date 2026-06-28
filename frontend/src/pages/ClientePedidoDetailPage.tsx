@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { getPedidoDetail, getHistorialPedido, getPagoByPedido, verifyPayment, cancelarPedido, recibirPedido } from "../services/api";
 import type { HistorialEstadoPedidoPublic } from "../services/api";
 import { PaymentButton } from "../components/PaymentButton";
@@ -107,10 +108,12 @@ export function ClientePedidoDetailPage(): JSX.Element {
     }
   };
 
+  const esMp = pedidoQuery.data?.forma_pago_codigo?.toLowerCase() === "mercadopago";
+
   const pagoQuery = useQuery({
     queryKey: ["cliente-pago", pedidoId],
     queryFn: () => getPagoByPedido(pedidoId),
-    enabled: !Number.isNaN(pedidoId),
+    enabled: !Number.isNaN(pedidoId) && esMp,
     retry: false,
   });
 
@@ -140,6 +143,7 @@ export function ClientePedidoDetailPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>{`Pedido #${pedido.id} | Food Store`}</title></Helmet>
       <div className="flex items-center justify-between">
         <div>
           <Link to="/mis-pedidos" className="text-sm text-orange-600 dark:text-orange-400 hover:underline">&larr; Mis pedidos</Link>

@@ -1,7 +1,10 @@
 import { useMemo, useState, useEffect, type ChangeEvent, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { EmptyState } from "../components/EmptyState";
 import { Modal } from "../components/Modal";
 import { useProductosWS } from "../hooks/useProductosWS";
 import type { Categoria, CategoriaCreate, CategoriaUpdate } from "../models/Categoria";
@@ -575,6 +578,8 @@ function EntityPage<T extends BaseEntity, TCreate, TUpdate>({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
 
+  const [confirmAction, setConfirmAction] = useState<{ isOpen: boolean; id: number; action: "delete" | "restore" }>({ isOpen: false, id: 0, action: "delete" });
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [form, setForm] = useState<EntityForm>(config.toForm(null));
@@ -709,16 +714,12 @@ function EntityPage<T extends BaseEntity, TCreate, TUpdate>({
     resetModal();
   };
 
-  const onDelete = async (id: number): Promise<void> => {
-    if (confirm("¿Está seguro de dar de baja este registro?")) {
-      await deleteMutation.mutateAsync(id);
-    }
+  const onDelete = (id: number): void => {
+    setConfirmAction({ isOpen: true, id, action: "delete" });
   };
 
-  const onRestore = async (id: number): Promise<void> => {
-    if (confirm("¿Está seguro de dar de alta nuevamente este registro?")) {
-      await restoreMutation.mutateAsync(id);
-    }
+  const onRestore = (id: number): void => {
+    setConfirmAction({ isOpen: true, id, action: "restore" });
   };
 
   const clearFilters = (): void => {
@@ -1036,8 +1037,8 @@ function EntityPage<T extends BaseEntity, TCreate, TUpdate>({
             {isCategoryPage ? renderCategoryRows() : rows.map((item) => renderRow(item))}
             {!rows.length && !listQuery.isLoading ? (
               <tr>
-                <td className="border px-3 py-2 text-center text-orange-700 dark:text-orange-300" colSpan={isIngredientePage ? 5 : isProductPage ? 5 : 4}>
-                  Sin datos
+                <td className="border px-3 py-2 text-center" colSpan={isIngredientePage ? 5 : isProductPage ? 5 : 4}>
+                  <EmptyState icon="📂" title="Sin registros" description="No hay registros para mostrar." />
                 </td>
               </tr>
             ) : null}
@@ -1127,6 +1128,23 @@ function EntityPage<T extends BaseEntity, TCreate, TUpdate>({
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={confirmAction.isOpen}
+        title={confirmAction.action === "delete" ? "Dar de baja" : "Dar de alta"}
+        message={confirmAction.action === "delete" ? "¿Está seguro de dar de baja este registro?" : "¿Está seguro de dar de alta nuevamente este registro?"}
+        confirmLabel={confirmAction.action === "delete" ? "Dar de baja" : "Dar de alta"}
+        variant={confirmAction.action === "delete" ? "danger" : "default"}
+        onConfirm={async () => {
+          if (confirmAction.action === "delete") {
+            await deleteMutation.mutateAsync(confirmAction.id);
+          } else {
+            await restoreMutation.mutateAsync(confirmAction.id);
+          }
+          setConfirmAction({ isOpen: false, id: 0, action: "delete" });
+        }}
+        onCancel={() => setConfirmAction({ isOpen: false, id: 0, action: "delete" })}
+      />
     </section>
   );
 }
@@ -1292,13 +1310,22 @@ const ingredienteConfig: EntityConfig<Ingrediente, IngredienteCreate, Ingredient
 };
 
 export function CategoriasPage(): JSX.Element {
-  return <EntityPage config={categoriaConfig} />;
+  return <>
+    <Helmet><title>Categorías | Food Store</title></Helmet>
+    <EntityPage config={categoriaConfig} />
+  </>;
 }
 
 export function ProductosPage(): JSX.Element {
-  return <EntityPage config={productoConfig} />;
+  return <>
+    <Helmet><title>Productos Admin | Food Store</title></Helmet>
+    <EntityPage config={productoConfig} />
+  </>;
 }
 
 export function IngredientesPage(): JSX.Element {
-  return <EntityPage config={ingredienteConfig} />;
+  return <>
+    <Helmet><title>Ingredientes | Food Store</title></Helmet>
+    <EntityPage config={ingredienteConfig} />
+  </>;
 }

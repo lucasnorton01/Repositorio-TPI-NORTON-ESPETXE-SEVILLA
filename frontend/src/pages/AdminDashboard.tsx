@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Card } from "../components/ui/Card";
 
@@ -34,6 +35,7 @@ function LinkIcon({ icon, color }: { icon: string; color: string }) {
 export function AdminDashboard(): JSX.Element {
   return (
     <div className="space-y-6">
+      <Helmet><title>Panel Admin | Food Store</title></Helmet>
       <div>
         <h1 className="font-display text-3xl font-bold text-brand-900 dark:text-brand-300">Panel de Administración</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-gray-300">Gestión completa del sistema Food Store</p>

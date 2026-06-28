@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { categoriaService, ingredienteService, productoService } from "../services/api";
@@ -90,6 +91,7 @@ export function ProductDetailPage(): JSX.Element {
 
   return (
     <section className="rounded-3xl border border-orange-100 dark:border-gray-500 bg-white/90 dark:bg-gray-800/90 p-5 shadow-sm backdrop-blur">
+      <Helmet><title>{`${producto?.nombre ?? "Producto"} | Food Store`}</title></Helmet>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-orange-700 dark:text-orange-300">Detalle de producto</p>

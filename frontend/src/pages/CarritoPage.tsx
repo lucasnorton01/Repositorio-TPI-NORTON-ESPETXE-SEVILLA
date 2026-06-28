@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -105,6 +106,7 @@ export function CarritoPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
+      <Helmet><title>Mi Carrito | Food Store</title></Helmet>
       <div>
         <h1 className="font-display text-3xl font-bold text-brand-900 dark:text-brand-300">Mi Carrito</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-gray-300">

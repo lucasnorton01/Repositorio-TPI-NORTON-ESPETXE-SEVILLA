@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import type { UsuarioPublic } from "../services/api";
 import { listUsuarios, updateUsuario, registerUser, assignRol, removeRol, getUsuario } from "../services/api";
@@ -118,6 +119,7 @@ export function UsuariosAdminPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
+      <Helmet><title>Usuarios | Food Store</title></Helmet>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Usuarios</h1>

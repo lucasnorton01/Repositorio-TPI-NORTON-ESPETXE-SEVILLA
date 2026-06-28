@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
 import { getCategoriaDetail } from "../services/api";
 import { SkeletonPage } from "../components/Skeleton";
 
@@ -17,6 +18,7 @@ export function CategoryDetailPage(): JSX.Element {
 
   return (
     <section className="rounded-3xl border border-orange-100 dark:border-gray-500 bg-white/90 dark:bg-gray-800/90 p-5 shadow-sm backdrop-blur">
+      <Helmet><title>{`${categoria?.nombre ?? "Categoría"} | Food Store`}</title></Helmet>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-orange-700 dark:text-orange-300">Detalle de categoría</p>

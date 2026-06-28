@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { productoService, ingredienteService, updateProductoStock, updateProductoDisponibilidad } from "../services/api";
 import { useProductosWS } from "../hooks/useProductosWS";
 import type { Producto } from "../models/Producto";
@@ -13,6 +14,7 @@ export function GestionStockPage(): JSX.Element {
   const [tab, setTab] = useState<Tab>("productos");
   return (
     <div className="space-y-4">
+      <Helmet><title>Gestión Stock | Food Store</title></Helmet>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Gestión de Stock</h1>
         <p className="mt-2 text-orange-700 dark:text-orange-300">Control de inventario y disponibilidad</p>

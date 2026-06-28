@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { PageTransition } from "../components/PageTransition";
 import { registerUser } from "../services/api";
@@ -57,6 +58,7 @@ export function RegisterPage(): JSX.Element {
 
   return (
     <PageTransition routeKey={location.pathname}>
+      <Helmet><title>Registrarse | Food Store</title></Helmet>
     <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 p-4 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="w-full max-w-md">
         {/* Back link */}

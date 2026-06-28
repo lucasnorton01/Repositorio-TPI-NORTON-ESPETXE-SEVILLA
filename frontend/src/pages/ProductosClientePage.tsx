@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { useCartStore } from "../stores/cartStore";
@@ -53,6 +54,7 @@ function getCategoryEmoji(nombre: string): string {
   if (n.includes("adicional")) return "🧀";
   if (n.includes("especial")) return "✨";
   if (n.includes("tradicional")) return "📜";
+  if (n.includes("lomo")) return "🥩";
   return "📦";
 }
 
@@ -63,6 +65,7 @@ function getCategoryImage(nombre: string): string {
   if (n.includes("adicional")) return "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80";
   if (n.includes("especial")) return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
   if (n.includes("tradicional")) return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("lomo")) return "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80";
   return "https://images.unsplash.com/photo-1543332164-6e82f355badc?auto=format&fit=crop&w=800&q=80";
 }
 
@@ -195,6 +198,7 @@ export function ProductosClientePage(): JSX.Element {
 
   return (
     <div className="space-y-5">
+      <Helmet><title>Catálogo | Food Store</title></Helmet>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-bold text-brand-900 dark:text-brand-300">Productos</h1>

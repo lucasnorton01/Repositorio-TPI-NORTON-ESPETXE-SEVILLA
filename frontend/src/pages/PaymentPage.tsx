@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../context/AuthContext'
 import { PageTransition } from '../components/PageTransition'
 import { api, listDireccionesUsuario, updatePedidoDireccion, cancelarPedido, type DireccionEntregaPublic } from '../services/api'
@@ -189,6 +190,7 @@ export default function PaymentPage() {
 
   return (
     <PageTransition routeKey={location.pathname}>
+      <Helmet><title>Finalizar Pedido | Food Store</title></Helmet>
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <header className="border-b border-gray-200 bg-white/90 shadow-sm backdrop-blur dark:border-surface-border dark:bg-surface-card/90">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">

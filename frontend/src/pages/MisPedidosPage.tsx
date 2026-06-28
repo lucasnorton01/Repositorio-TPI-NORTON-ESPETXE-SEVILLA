@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { getPedidosWebSocketUrl, listPedidos, type PedidoPublic } from "../services/api";
 import { SkeletonPage } from "../components/Skeleton";
 import { Badge } from "../components/Badge";
@@ -99,6 +100,7 @@ export function MisPedidosPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
+      <Helmet><title>Mis Pedidos | Food Store</title></Helmet>
       <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Mis Pedidos</h1>
 
       <div className="flex flex-wrap gap-3">

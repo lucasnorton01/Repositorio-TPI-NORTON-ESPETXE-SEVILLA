@@ -1,8 +1,10 @@
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
 export function ClienteDashboard(): JSX.Element {
   return (
     <div className="space-y-4">
+      <Helmet><title>Inicio | Food Store</title></Helmet>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Bienvenido a Food Store</h1>
         <p className="mt-2 text-orange-700 dark:text-orange-300">Descubre nuestros productos y realiza tu pedido</p>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { getPedidoDetail, verifyPayment } from "../services/api";
 import { useCart } from "../context/CartContext";
 import { PageTransition } from "../components/PageTransition";
@@ -61,6 +62,7 @@ export default function OrderRedirectPage() {
 
   return (
     <PageTransition routeKey={location.pathname}>
+      <Helmet><title>Verificando pago | Food Store</title></Helmet>
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-stone-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <div className="w-full max-w-md rounded-xl border border-orange-100 dark:border-gray-500 bg-white/90 dark:bg-gray-800/90 p-8 text-center shadow-sm backdrop-blur">
         {!result ? (

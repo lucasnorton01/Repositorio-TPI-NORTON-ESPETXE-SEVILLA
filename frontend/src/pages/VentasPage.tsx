@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   getPedidosWebSocketUrl,
   listPedidos,
@@ -16,6 +17,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell,
 } from "recharts";
+import { EmptyState } from "../components/EmptyState";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -233,6 +235,7 @@ export function VentasPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
+      <Helmet><title>Ventas | Food Store</title></Helmet>
       <div>
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400">Dashboard</p>
         <h1 className="font-display text-3xl font-bold text-brand-900 dark:text-brand-300">Ventas</h1>
@@ -502,8 +505,8 @@ export function VentasPage(): JSX.Element {
           <tbody className="divide-y divide-gray-100 dark:divide-surface-border">
             {tablaPedidos.length === 0 && !tablaLoading && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-gray-300">
-                  No se encontraron pedidos
+                <td colSpan={7} className="px-4 py-8 text-center">
+                  <EmptyState icon="📋" title="Sin pedidos" description="No se encontraron pedidos para los filtros seleccionados." />
                 </td>
               </tr>
             )}

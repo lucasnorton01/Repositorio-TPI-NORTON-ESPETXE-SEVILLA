@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
 import { RealtimeBadge } from "../components/RealtimeBadge";
 import { useAdminOrdersFeed } from "../hooks/useOrderStatusWS";
@@ -12,6 +13,7 @@ import {
 } from "../services/api";
 import { SkeletonPage } from "../components/Skeleton";
 import { actionLabels } from "../constants/ui";
+import { EmptyState } from "../components/EmptyState";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -207,6 +209,7 @@ export function OperacionesPedidosPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
+      <Helmet><title>Operaciones Pedidos | Food Store</title></Helmet>
       <div>
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -270,8 +273,8 @@ export function OperacionesPedidosPage(): JSX.Element {
             <tbody className="divide-y divide-gray-100 dark:divide-surface-border">
               {pedidosAMostrar.length === 0 && !tablaLoading && (
                 <tr>
-                  <td colSpan={canOperate ? 8 : 7} className="px-4 py-8 text-center text-slate-500 dark:text-gray-300">
-                    No se encontraron pedidos
+                  <td colSpan={canOperate ? 8 : 7} className="px-4 py-8 text-center">
+                    <EmptyState icon="📋" title="Sin pedidos" description="No se encontraron pedidos para los filtros seleccionados." />
                   </td>
                 </tr>
               )}

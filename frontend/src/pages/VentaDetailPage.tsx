@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { getPedidoDetail, getHistorialPedido, getPagoByPedido, confirmPayment, manualAprobarPago, verifyPayment } from "../services/api";
 import type { HistorialEstadoPedidoPublic } from "../services/api";
 import { Card } from "../components/ui/Card";
@@ -79,10 +80,12 @@ export function VentaDetailPage(): JSX.Element {
     enabled: !Number.isNaN(ventaId),
   });
 
+  const esMp = ventaQuery.data?.forma_pago_codigo?.toLowerCase() === "mercadopago";
+
   const pagoQuery = useQuery({
     queryKey: ["venta-pago", ventaId],
     queryFn: () => getPagoByPedido(ventaId),
-    enabled: !Number.isNaN(ventaId),
+    enabled: !Number.isNaN(ventaId) && esMp,
     retry: false,
     refetchInterval: 10_000,
   });
@@ -162,6 +165,7 @@ export function VentaDetailPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <Helmet><title>{`Venta #${venta.id} | Food Store`}</title></Helmet>
       <div className="flex items-center justify-between">
         <div>
           <Link to="/ventas" className="text-sm text-brand-600 hover:underline dark:text-brand-400">&larr; Volver a ventas</Link>

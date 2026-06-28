@@ -1,8 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import type { Ingrediente } from "../models/Ingrediente";
 import { ingredienteService } from "../services/api";
+import { EmptyState } from "../components/EmptyState";
 import { SkeletonPage } from "../components/Skeleton";
 
 interface GastoFormState {
@@ -69,13 +71,16 @@ export function GastosAdminPage(): JSX.Element {
 
   return (
     <div className="space-y-5">
+      <Helmet><title>Gastos | Food Store</title></Helmet>
       <div>
         <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Gastos</h1>
         <p className="mt-1 text-sm text-slate-700 dark:text-gray-300">Ajusta costos unitarios e inventario mínimo de ingredientes.</p>
       </div>
 
       <div className="space-y-3">
-        {ingredientes.map((ingrediente) => {
+        {ingredientes.length === 0 ? (
+          <EmptyState icon="📦" title="Sin ingredientes" description="No hay ingredientes registrados todavía." />
+        ) : ingredientes.map((ingrediente) => {
           const row = getRowState(ingrediente);
           return (
             <article

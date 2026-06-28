@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { productoService } from "../services/api";
 import { useProductosWS } from "../hooks/useProductosWS";
 import type { Producto } from "../models/Producto";
@@ -22,6 +23,7 @@ export function ProductosInternosPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
+      <Helmet><title>Productos | Food Store</title></Helmet>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-orange-900 dark:text-orange-300">Productos</h1>
         <p className="mt-2 text-orange-700 dark:text-orange-300">Catálogo interno de productos</p>
